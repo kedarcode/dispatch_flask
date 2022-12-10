@@ -4,7 +4,7 @@ import xlrd
 from json_excel_converter import Converter
 from json_excel_converter.xlsx import Writer
 from Path import PathResource
-
+from datetime import date
 
 final_sheet = []
 
@@ -38,7 +38,7 @@ def caltax(data, sc, get_total):
     if at == 0:
         return
     percentage_factor = get_total / at
-    print(get_total)
+    # print(get_total)
     for d in data:
         name_str = d["name"].replace(' ', '').upper()
         d['qty'] = int(d['qty'])
@@ -51,7 +51,7 @@ def caltax(data, sc, get_total):
             return
 
     if sc == 'MH':
-        print(sc)
+        # print(sc)
         for l in lab:
             if '12' in l:
                 obj[l] = format(
@@ -74,17 +74,17 @@ def caltax(data, sc, get_total):
                     (float(tax18) - (float(tax18) / 1.18)), '.2f')
                 tax += float(tax18) - (float(tax18) / 1.18)
 
-    print(tax)
+    # print(tax)
     obj['sub_total'] = format(get_total - tax, '.2f')
 
-    print(obj, get_total, tax12, tax18)
+    # print(obj, get_total, tax12, tax18)
     return obj
 
 
-print(PathResource.resource_path(f'output/dispatch{str(datetime.today()).split(".")[0].replace(":", "")}.xlsx'))
+# print(PathResource.resource_path(f'output/dispatch{str(datetime.today()).split(".")[0].replace(":", "")}.xlsx'))
 
 
-def generate_sheet(start, end):
+def generate_sheet(start=datetime(2022, 1, 1), end=datetime(date.today().year, date.today().month, date.today().day)):
     session = MongoSession(
         '128.199.16.195',
         port=22,
@@ -139,14 +139,13 @@ def generate_sheet(start, end):
             for rem in temp_pro:
                 obj[rem] = 0
             obj['agent'] = data["agent_name"]
-            print(obj)
             final_sheet.append(obj)
+    filename = f'output/dispatch{str(datetime.today()).split(".")[0].replace(":", "")}.xlsx'
     conv = Converter()
-    conv.convert(final_sheet, Writer(file=PathResource.resource_path(
-        f'output/dispatch{str(datetime.today()).split(".")[0].replace(":", "")}.xlsx')))
+    conv.convert(final_sheet, Writer(file=PathResource.resource_path(filename)))
 
     session.stop()
-    return f'output/dispatch{str(datetime.today()).split(".")[0].replace(":", "")}.xlsx'
+    return filename
 
 
 generate_sheet(datetime(2022, 11, 24), datetime(2022, 12, 7))
